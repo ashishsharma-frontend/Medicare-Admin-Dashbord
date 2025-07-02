@@ -1,5 +1,4 @@
-﻿/* eslint-disable react/prop-types */
-import {
+﻿import {
   Modal,
   ModalOverlay,
   ModalContent,
@@ -10,22 +9,22 @@ import {
   Button,
   Box,
   Flex,
+  Stack,
   useColorModeValue,
   Heading,
   FormControl,
   FormLabel,
   Input,
-  CardBody,
-  Card,
+  Select,
   Divider,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
   Badge,
-  Select,
   useDisclosure,
   useToast,
+  Text,
 } from "@chakra-ui/react";
 import useDoctorData from "../../Hooks/UseDoctorData";
 import usePatientData from "../../Hooks/UsePatientsData";
@@ -44,13 +43,12 @@ import AddPatients from "../Patients/AddPatients";
 
 let defStatus = ["Pending", "Confirmed"];
 
-const getTypeBadge = (type) => {
-  return (
-    <Badge colorScheme={ColorMapArray[type] || "blue"} p={"5px"} px={10}>
-      {type}
-    </Badge>
-  );
-};
+const getTypeBadge = (type) => (
+  <Badge colorScheme={ColorMapArray[type] || "blue"} p={"5px"} px={10}>
+    {type}
+  </Badge>
+);
+
 const getFee = (type, doct) => {
   switch (type) {
     case "OPD-WALK-IN":
@@ -71,46 +69,16 @@ const getFee = (type, doct) => {
       return 0;
   }
 };
+
 const paymentModes = [
-  {
-    id: 1,
-    name: "Cash",
-  },
-  {
-    id: 2,
-    name: "Online",
-  },
-  {
-    id: 3,
-    name: "Other",
-  },
-  {
-    id: 4,
-    name: "Wallet",
-  },
-  {
-    id: 5,
-    name: "UPI",
-  },
+  { id: 1, name: "Cash" },
+  { id: 2, name: "Online" },
+  { id: 3, name: "Other" },
+  { id: 4, name: "Wallet" },
+  { id: 5, name: "UPI" },
 ];
 
-// add appointemmnt
-const addAppointment = async (data) => {
-  const res = await ADD(admin.token, "add_appointment", data);
-  if (res.response !== 200) {
-    throw new Error(res.message);
-  }
-  return res;
-};
-const addAppointmentCheckin = async (data) => {
-  const res = await ADD(admin.token, "add_appointment_checkin", data);
-  if (res.response !== 200) {
-    throw new Error(res.message);
-  }
-  return res;
-};
-
-function AddNewAppointment({ isOpen, onClose, PatientID }) {
+const AddNewAppointment = ({ isOpen, onClose, PatientID }) => {
   const toast = useToast();
   const {
     isOpen: timeSlotisOpen,
@@ -135,7 +103,7 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
   const queryClient = useQueryClient();
   const [defalutDataForPationt, setdefalutDataForPationt] = useState(PatientID);
 
-  //   doctorDetails
+  // doctorDetails
   const { data: doctorDetails, isLoading: isDoctLoading } = useQuery({
     queryKey: ["doctor", doct?.user_id],
     queryFn: async () => {
@@ -145,7 +113,7 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
     enabled: !!doct,
   });
 
-  //
+  // Validation
   const checkMissingValues = () => {
     if (!patient) return "patient";
     if (!doct) return "doctor";
@@ -155,8 +123,10 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
     if (!status) return "Appointment status";
     if (!paymentStatus) return "Payment Status";
     if (paymentStatus === "Paid" && !paymentMathod) return "Payment Method";
-    return null; // All values are present
+    return null;
   };
+
+  // Add appointment mutation
   const mutation = useMutation({
     mutationFn: async () => {
       const missingField = checkMissingValues();
@@ -186,21 +156,23 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
           payment_status: paymentStatus,
           source: "Admin",
         };
-        const res = await addAppointment(formData);
+        const res = await ADD(admin.token, "add_appointment", formData);
 
-        if (type === "EMERGENCY"
-          || type === "OPD-WALK-IN"
-          || type === "TELEPHONE-APPOINTMENTS"
-          || type === "FAST-CONSULTATION"
-          || type === "FOLLOW-UP"
-          || type === "MEDICAL-REPRESENTATIVE") {
+        if (
+          type === "EMERGENCY" ||
+          type === "OPD-WALK-IN" ||
+          type === "TELEPHONE-APPOINTMENTS" ||
+          type === "FAST-CONSULTATION" ||
+          type === "FOLLOW-UP" ||
+          type === "MEDICAL-REPRESENTATIVE"
+        ) {
           let formDataCheckin = {
             appointment_id: res.id,
             date: selectedDate,
             time: `${selectedSlot.time_start}:00`,
           };
-          await addAppointmentCheckin(formDataCheckin);
-        };
+          await ADD(admin.token, "add_appointment_checkin", formDataCheckin);
+        }
       }
     },
     onError: (error) => {
@@ -215,20 +187,20 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
     },
   });
 
-  // get time slotes
+  // get time slots
   const getDayName = (dateString) => {
     const date = moment(dateString, "YYYYMMDD");
     return date.format("dddd");
   };
-  //const [count, setCount] = useState(0)
+
   useEffect(() => {
     const drData = async (date) => {
       const url =
         type === "OPD-WALK-IN"
           ? `get_doctor_time_interval/${doct?.user_id}/${getDayName(date)}`
           : type === "VIDEO-CONSULTATION"
-            ? `get_doctor_video_time_interval/${doct?.user_id}/${getDayName(date)}`
-            : `get_doctor_time_interval/${doct?.user_id}/${getDayName(date)}`;
+          ? `get_doctor_video_time_interval/${doct?.user_id}/${getDayName(date)}`
+          : `get_doctor_time_interval/${doct?.user_id}/${getDayName(date)}`;
       const res = await GET(admin.token, url);
       const resBooked = await GET(
         admin.token,
@@ -236,27 +208,20 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
       );
       for (var ts = 0; ts < res?.data?.length; ts++) {
         var slotAvailable = true;
-        /*
-        for (var bs = 0; bs < resBooked.data.length; bs++) {
-          if (
-            res?.data[ts]?.time_start === resBooked?.data[bs]?.time_slots &&
-            resBooked?.data[bs]?.date === selectedDate
-          ) {
-            slotAvailable = false;
-          }
-        }
-        */
-        if( res?.data[ts]?.time_end < moment().format("HH:mm") && selectedDate==moment().format("YYYY-MM-DD")){
+        if (
+          res?.data[ts]?.time_end < moment().format("HH:mm") &&
+          date === moment().format("YYYY-MM-DD")
+        ) {
           slotAvailable = false;
-        }else{        
+        } else {
           for (var bs = 0; bs < resBooked.data.length; bs++) {
             if (
               res?.data[ts]?.time_start === resBooked?.data[bs]?.time_slots &&
               resBooked?.data[bs]?.date === selectedDate
             ) {
               slotAvailable = false;
-            } 
-          } 
+            }
+          }
         }
         if (slotAvailable) {
           slotAvailable = true;
@@ -264,183 +229,155 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
           break;
         }
       }
-    }
-    drData(selectedDate); 
+    };
+    drData(selectedDate);
+    // eslint-disable-next-line
   }, [selectedDate, doct, type]);
+
+  // Responsive design starts here
   return (
     <Box>
-      {" "}
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        size={"2xl"}
-        onOverlayClick={false}
-      >
+      <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Add New Appointment</ModalHeader>
+        <ModalContent borderRadius="2xl" p={{ base: 2, md: 4 }}>
+          <ModalHeader fontWeight="bold" fontSize={{ base: "lg", md: "2xl" }}>
+            Add New Appointment
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Flex gap={10}>
-              {" "}
-              <Flex flex={3} gap={4} align={"center"}>
-                <UsersCombobox
-                  data={patientsData}
-                  name={"Patient"}
-                  setState={setpatient}
-                  defaultData={defalutDataForPationt}
-                  addNew={true}
-                  addOpen={AddPatientonOpen}
-                />
-                Or
-                <Button
-                  size={"xs"}
-                  w={120}
-                  colorScheme={"blue"}
-                  onClick={() => {
-                    AddPatientonOpen();
-                  }}
+            <Stack spacing={4}>
+              {/* Patient & Doctor Selection */}
+              <Stack
+                direction={{ base: "column", md: "row" }}
+                spacing={4}
+                align={{ base: "stretch", md: "center" }}
+              >
+                <Flex flex={2} gap={2} align="center">
+                  <UsersCombobox
+                    data={patientsData}
+                    name="Patient"
+                    setState={setpatient}
+                    defaultData={defalutDataForPationt}
+                    addNew={true}
+                    addOpen={AddPatientonOpen}
+                  />
+                  <Text color="gray.500" fontWeight="semibold" fontSize="sm">
+                    Or
+                  </Text>
+                  <Button
+                    size="sm"
+                    colorScheme="blue"
+                    px={4}
+                    onClick={AddPatientonOpen}
+                    fontWeight="semibold"
+                  >
+                    Add Patient
+                  </Button>
+                </Flex>
+                <Flex flex={1}>
+                  <UsersCombobox
+                    data={doctorsData}
+                    defaultData={"1"}
+                    name="Doctor"
+                    setState={setdoct}
+                  />
+                </Flex>
+              </Stack>
+
+              {/* Appointment Details */}
+              <Box>
+                <Heading size="sm" mt={4} mb={2}>
+                  Appointment Details
+                </Heading>
+                <Divider mb={4} />
+                <Stack
+                  direction={{ base: "column", md: "row" }}
+                  spacing={4}
+                  mb={2}
                 >
-                  Add patient
-                </Button>
-              </Flex>
-              <Flex flex={2}>
-                <UsersCombobox
-                  data={doctorsData}
-                  defaultData={'1'}
-                  name={"Doctor"}
-                  setState={setdoct}
-                />
-              </Flex>
-            </Flex>
-            <Card mt={5} bg={useColorModeValue("white", "gray.700")}>
-              <CardBody p={3} as={"form"}>
-                {" "}
-                <Heading as={"h3"} size={"sm"}>
-                  Appointment Details -{" "}
-                </Heading>{" "}
-                <Divider mt={2} mb={5} />
-                <Flex gap={5}>
-                  <FormControl id="doct_specialization" size={"sm"}>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Appointment Type
-                    </FormLabel>
+                  <FormControl>
+                    <FormLabel fontSize="sm">Appointment Type</FormLabel>
                     <Menu>
                       <MenuButton
                         as={Button}
                         rightIcon={<ChevronDownIcon />}
-                        bg={"transparent"}
-                        w={"100%"}
-                        textAlign={"left"}
-                        pl={0}
-                        pt={0}
-                        h={8}
-                        _hover={{
-                          bg: "transparent",
-                        }}
-                        _focus={{
-                          bg: "transparent",
-                        }}
-                        borderBottom={"1px solid"}
-                        borderBottomRadius={0}
-                        borderColor={useColorModeValue("gray.200", "gray.600")}
+                        bg="gray.50"
+                        w="100%"
+                        textAlign="left"
+                        fontWeight="semibold"
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        _hover={{ bg: "gray.100" }}
+                        _focus={{ bg: "gray.100" }}
+                        py={2}
                       >
                         {type ? getTypeBadge(type) : "Select Appointment Type"}
                       </MenuButton>
                       <MenuList>
-                        {AppointmentTypes?.map(
-                          (option) => {
-                            if (option === "MEDICAL-REPRESENTATIVE" && patient?.is_mr !== 1) {
-                              return null;
-                            }
-                            return (
-                              <MenuItem
-                                key={option}
-                                onClick={() => {
-                                  if (option !== "OPD-WALK-IN") {
-                                    setpaymentStatus("Paid");
-                                  }
-
-                                  if (option === "EMERGENCY") {
-                                    settype(option);
-                                    setselectedDate(
-                                      moment().format("YYYY-MM-DD")
-                                    );
-                                    setselectedSlot({
-                                      time_start: moment().format("HH:mm"),
-                                    });
-                                  } else {
-                                    setselectedDate();
-                                    setselectedSlot();
-                                    settype(option);
-                                  }
-                                }}
-                              >
-                                <Box display="flex" alignItems="center">
-                                  {getTypeBadge(option)}
-                                </Box>
-                              </MenuItem>
-                            );
-                          })}
+                        {AppointmentTypes?.map((option) => {
+                          if (
+                            option === "MEDICAL-REPRESENTATIVE" &&
+                            patient?.is_mr !== 1
+                          ) {
+                            return null;
+                          }
+                          return (
+                            <MenuItem
+                              key={option}
+                              onClick={() => {
+                                if (option !== "OPD-WALK-IN") {
+                                  setpaymentStatus("Paid");
+                                }
+                                if (option === "EMERGENCY") {
+                                  settype(option);
+                                  setselectedDate(moment().format("YYYY-MM-DD"));
+                                  setselectedSlot({
+                                    time_start: moment().format("HH:mm"),
+                                  });
+                                } else {
+                                  setselectedDate();
+                                  setselectedSlot();
+                                  settype(option);
+                                }
+                              }}
+                            >
+                              <Box display="flex" alignItems="center">
+                                {getTypeBadge(option)}
+                              </Box>
+                            </MenuItem>
+                          );
+                        })}
                       </MenuList>
                     </Menu>
                   </FormControl>
                   <FormControl>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Appointment Date
-                    </FormLabel>
+                    <FormLabel fontSize="sm">Appointment Date</FormLabel>
                     <Input
-                      size={"sm"}
-                      fontWeight={600}
-                      variant="flushed"
-                      value={moment(selectedDate).format("DD-MM-YYYY")}
-                      onClick={() => {
-                        if (!doct) {
-                          return ShowToast(
-                            toast,
-                            "error",
-                            "Please Select Doctor"
-                          );
-                        }
-                        if (!type) {
-                          return ShowToast(
-                            toast,
-                            "error",
-                            "Please Select Appointment Type"
-                          );
-                        }
-                        timeSlotonOpen();
-                      }}
-                      cursor={"pointer"}
+                      type="date"
+                      size="sm"
+                      fontWeight="semibold"
+                      value={selectedDate}
+                      onChange={(e) => setselectedDate(e.target.value)}
+                      bg="gray.50"
                     />
                   </FormControl>
-                </Flex>
-                <Flex gap={5} mt={2}>
+                </Stack>
+                <Stack
+                  direction={{ base: "column", md: "row" }}
+                  spacing={4}
+                  mb={2}
+                >
                   <FormControl>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Appointment Time Slot
-                    </FormLabel>
+                    <FormLabel fontSize="sm">Time Slot</FormLabel>
                     <Input
-                      size={"sm"}
-                      fontWeight={600}
-                      variant="flushed"
+                      size="sm"
+                      fontWeight="semibold"
                       value={
                         selectedSlot
                           ? moment(selectedSlot.time_start, "hh:mm").format(
-                            "hh:mm A"
-                          )
+                              "hh:mm A"
+                            )
                           : "Select Time Slot"
                       }
                       onClick={() => {
@@ -453,37 +390,27 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
                         }
                         timeSlotonOpen();
                       }}
-                      cursor={"pointer"}
+                      cursor="pointer"
                       isReadOnly
+                      bg="gray.50"
                     />
                   </FormControl>
-                  <FormControl id="status" size={"sm"}>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Status
-                    </FormLabel>
+                  <FormControl>
+                    <FormLabel fontSize="sm">Status</FormLabel>
                     <Menu>
                       <MenuButton
                         as={Button}
                         rightIcon={<ChevronDownIcon />}
-                        bg={"transparent"}
-                        w={"100%"}
-                        textAlign={"left"}
-                        pl={0}
-                        pt={0}
-                        h={8}
-                        _hover={{
-                          bg: "transparent",
-                        }}
-                        _focus={{
-                          bg: "transparent",
-                        }}
-                        borderBottom={"1px solid"}
-                        borderBottomRadius={0}
-                        borderColor={useColorModeValue("gray.200", "gray.600")}
+                        bg="gray.50"
+                        w="100%"
+                        textAlign="left"
+                        fontWeight="semibold"
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        _hover={{ bg: "gray.100" }}
+                        _focus={{ bg: "gray.100" }}
+                        py={2}
                       >
                         {status ? getStatusBadge(status) : "Select Status"}
                       </MenuButton>
@@ -491,9 +418,7 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
                         {defStatus.map((option) => (
                           <MenuItem
                             key={option}
-                            onClick={() => {
-                              setstatus(option);
-                            }}
+                            onClick={() => setstatus(option)}
                           >
                             <Box display="flex" alignItems="center">
                               {getStatusBadge(option)}
@@ -503,54 +428,39 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
                       </MenuList>
                     </Menu>
                   </FormControl>
-                </Flex>
-              </CardBody>
-            </Card>
-            <Card mt={5} bg={useColorModeValue("white", "gray.700")}>
-              <CardBody p={3} as={"form"}>
-                {" "}
-                <Heading as={"h3"} size={"sm"}>
-                  Payment Details -{" "}
-                </Heading>{" "}
-                <Divider mt={2} mb={5} />
-                <Flex gap={5}>
+                </Stack>
+              </Box>
+
+              {/* Payment Details */}
+              <Box>
+                <Heading size="sm" mt={4} mb={2}>
+                  Payment Details
+                </Heading>
+                <Divider mb={4} />
+                <Stack
+                  direction={{ base: "column", md: "row" }}
+                  spacing={4}
+                  mb={2}
+                >
                   <FormControl>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Payment Status
-                    </FormLabel>
+                    <FormLabel fontSize="sm">Payment Status</FormLabel>
                     <Select
-                      placeholder="Select paymemnt status"
-                      variant="flushed"
-                      onChange={(e) => {
-                        setpaymentStatus(e.target.value);
-                      }}
                       value={paymentStatus}
+                      onChange={(e) => setpaymentStatus(e.target.value)}
+                      fontWeight="semibold"
+                      bg="gray.50"
                     >
                       <option value="Paid">Paid</option>
-                      {type === "OPD" && (
-                        <option value="Unpaid">Not Paid</option>
-                      )}
+                      <option value="Unpaid">Unpaid</option>
                     </Select>
                   </FormControl>
                   <FormControl>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Payment Method
-                    </FormLabel>
+                    <FormLabel fontSize="sm">Payment Method</FormLabel>
                     <Select
-                      placeholder="Select paymemnt Method"
-                      variant="flushed"
-                      onChange={(e) => {
-                        setpaymentMathod(e.target.value);
-                      }}
                       value={paymentMathod}
+                      onChange={(e) => setpaymentMathod(e.target.value)}
+                      fontWeight="semibold"
+                      bg="gray.50"
                     >
                       {paymentModes.map((item) => (
                         <option value={item.name} key={item.id}>
@@ -559,85 +469,85 @@ function AddNewAppointment({ isOpen, onClose, PatientID }) {
                       ))}
                     </Select>
                   </FormControl>
-                </Flex>
-                <Flex gap={5} mt={4}>
-                  <FormControl w={"50%"}>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Fee
-                    </FormLabel>
+                </Stack>
+                <Stack
+                  direction={{ base: "column", md: "row" }}
+                  spacing={4}
+                  mb={2}
+                >
+                  <FormControl>
+                    <FormLabel fontSize="sm">Fee</FormLabel>
                     <Input
-                      fontWeight={600}
-                      variant="flushed"
-                      size={"sm"}
+                      fontWeight="semibold"
+                      size="sm"
                       isReadOnly
                       value={doct && type ? getFee(type, doct) : 0}
+                      bg="gray.50"
                     />
                   </FormControl>
-                  <FormControl w={"50%"}>
-                    <FormLabel
-                      fontSize={"sm"}
-                      mb={0}
-                      color={useColorModeValue("gray.600", "gray.300")}
-                    >
-                      Total Amount
-                    </FormLabel>
+                  <FormControl>
+                    <FormLabel fontSize="sm">Total Amount</FormLabel>
                     <Input
-                      fontWeight={600}
-                      variant="flushed"
-                      size={"sm"}
+                      fontWeight="semibold"
+                      size="sm"
                       isReadOnly
                       value={doct && type ? getFee(type, doct) : 0}
+                      bg="gray.50"
                     />
                   </FormControl>
-                </Flex>
-              </CardBody>
-            </Card>
+                </Stack>
+              </Box>
+            </Stack>
           </ModalBody>
-
           <ModalFooter>
-            <Button colorScheme="gray" mr={3} onClick={onClose} size={"sm"}>
-              Close
-            </Button>
-            <Button
-              colorScheme={"blue"}
-              size={"sm"}
-              onClick={() => {
-                mutation.mutate();
-              }}
-              isLoading={mutation.isPending}
-            >
-              Add Appointment
-            </Button>
+            <Flex w="100%" gap={2} flexWrap="wrap">
+              <Button
+                colorScheme="blue"
+                flex={2}
+                fontWeight="semibold"
+                onClick={() => {
+                  // Add with checkin logic here if needed
+                  mutation.mutate();
+                }}
+                isLoading={mutation.isPending}
+              >
+                Add Appointment
+              </Button>
+              <Button
+                colorScheme="gray"
+                flex={1}
+                onClick={onClose}
+                fontWeight="semibold"
+              >
+                Close
+              </Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {timeSlotisOpen ? (
+      {/* Time Slot Modal */}
+      {timeSlotisOpen && (
         <AvailableTimeSlotes
           isOpen={timeSlotisOpen}
           onClose={timeSlotonClose}
-          doctID={doct.user_id}
+          doctID={doct?.user_id}
           selectedDate={selectedDate}
           setselectedDate={setselectedDate}
           selectedSlot={selectedSlot}
           setselectedSlot={setselectedSlot}
           type={type}
         />
-      ) : null}
-      {AddPatientisOpen ? (
+      )}
+      {/* Add Patient Modal */}
+      {AddPatientisOpen && (
         <AddPatients
-          nextFn={(data) => {
-            setdefalutDataForPationt(data);
-          }}
+          nextFn={(data) => setdefalutDataForPationt(data)}
           isOpen={AddPatientisOpen}
           onClose={AddPatientonClose}
         />
-      ) : null}
+      )}
     </Box>
   );
-}
+};
 
 export default AddNewAppointment;

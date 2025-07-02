@@ -21,6 +21,7 @@ import {
   InputGroup,
   InputLeftAddon,
   useToast,
+  Flex,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import ISDCODEMODAL from "../../Components/IsdModal";
@@ -88,83 +89,92 @@ function AddPatients({ nextFn, isOpen, onClose }) {
 
     mutation.mutate(formData);
   };
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       isCentered
-      size={"xl"}
+      size="lg"
       scrollBehavior="inside"
     >
       <ModalOverlay />
       <form onSubmit={handleSubmit(onSubmit)}>
-        <ModalContent borderRadius={8} overflow={"hidden"} zIndex={99999999}>
-          <ModalHeader py={1} fontSize={"md"} bg={"blue.700"} color={"#fff"}>
+        <ModalContent borderRadius="2xl" overflow="hidden" maxW="480px">
+          <ModalHeader
+            py={3}
+            fontSize="xl"
+            fontWeight="bold"
+            bg="blue.700"
+            color="#fff"
+            borderTopRadius="2xl"
+          >
             Add Patient
           </ModalHeader>
-          <ModalCloseButton top={0} color={"#fff"} />
-          <Divider />
+          <ModalCloseButton top={2} color="#fff" />
+          <Divider mb={0} />
 
-          <ModalBody>
-            <Grid templateColumns="repeat(3, 1fr)" gap={4} mt={3}>
+          <ModalBody py={6} px={{ base: 2, md: 6 }}>
+            <Grid
+              templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+              gap={4}
+              w="100%"
+            >
               <FormControl isRequired>
-                <FormLabel mb={-1}>First Name</FormLabel>
+                <FormLabel>First Name</FormLabel>
                 <Input
-                  size="sm"
-                  variant="flushed"
+                  size="md"
+                  variant="filled"
                   {...register("f_name")}
                   placeholder="First Name"
                 />
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel mb={-1}>Last Name</FormLabel>
+                <FormLabel>Last Name</FormLabel>
                 <Input
-                  size="sm"
-                  variant="flushed"
+                  size="md"
+                  variant="filled"
                   {...register("l_name")}
                   placeholder="Last Name"
                 />
               </FormControl>
 
-              <FormControl isRequired gridcx>
-                <FormLabel mb={-1}>Phone</FormLabel>
+              <FormControl isRequired gridColumn={{ base: "1", md: "span 2" }}>
+                <FormLabel>Phone</FormLabel>
                 <InputGroup>
                   <InputLeftAddon
-                    h={8}
-                    bg={"none"}
-                    borderTop={0}
-                    borderLeft={0}
-                    p={0}
-                    pr={2}
-                    borderRadius={0}
-                    cursor={"pointer"}
+                    h={10}
+                    bg="gray.50"
+                    borderRight={0}
+                    borderRadius="md"
+                    cursor="pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       onIsdOpen();
                     }}
-                    fontSize={"sm"}
+                    fontSize="md"
                   >
                     {isd_code} <AiOutlineDown style={{ marginLeft: "10px" }} />
                   </InputLeftAddon>
                   <Input
-                    size="sm"
-                    variant="flushed"
+                    size="md"
+                    variant="filled"
                     type="tel"
                     placeholder="Phone Number"
                     {...register("phone", {
                       required: true,
-                    pattern: /^[0-9]+$/
+                      pattern: /^[0-9]+$/,
                     })}
                   />
                 </InputGroup>
               </FormControl>
 
               <FormControl isRequired>
-                <FormLabel mb={-1}>Gender</FormLabel>
+                <FormLabel>Gender</FormLabel>
                 <Select
-                  size="sm"
-                  variant="flushed"
+                  size="md"
+                  variant="filled"
                   defaultValue="Male"
                   {...register("gender")}
                   placeholder="Gender"
@@ -173,13 +183,14 @@ function AddPatients({ nextFn, isOpen, onClose }) {
                   <option value={"Female"}>Female</option>
                 </Select>
               </FormControl>
-              <FormControl as="fieldset" mb={4}>
-                <FormLabel as="legend">Age Or DOB</FormLabel>
+
+              <FormControl as="fieldset">
+                <FormLabel as="legend">Age or DOB</FormLabel>
                 <RadioGroup
                   onChange={(value) => setAgeInType(value)}
                   value={ageInType}
                 >
-                  <Stack direction="row">
+                  <Stack direction="row" spacing={6}>
                     <Radio value="dob">DOB</Radio>
                     <Radio value="age">Age</Radio>
                   </Stack>
@@ -187,56 +198,69 @@ function AddPatients({ nextFn, isOpen, onClose }) {
               </FormControl>
 
               {ageInType === "dob" ? (
-                <FormControl>
-                  <FormLabel mb={-1}>Date of Birth</FormLabel>
+                <FormControl gridColumn={{ base: "1", md: "span 2" }}>
+                  <FormLabel>Date of Birth</FormLabel>
                   <Input
                     max={todayDate()}
-                    size="sm"
-                    variant="flushed"
+                    size="md"
+                    variant="filled"
                     type="date"
                     {...register("dob")}
                   />
                 </FormControl>
               ) : (
-                <FormControl>
-                  <FormLabel mb={-1}>Age</FormLabel>
+                <FormControl gridColumn={{ base: "1", md: "span 2" }}>
+                  <FormLabel>Age</FormLabel>
                   <Input
-                    size="sm"
-                    variant="flushed"
+                    size="md"
+                    variant="filled"
                     {...register("age", {
                       pattern: {
                         value: /^[0-9]+$/,
                         message: "Please enter a valid number",
                       },
                     })}
+                    placeholder="Age"
                   />
                 </FormControl>
               )}
 
               <FormControl>
-                <FormLabel mb={-1}>City</FormLabel>
-                <Input size="sm" variant="flushed" {...register("city")} />
+                <FormLabel>City</FormLabel>
+                <Input size="md" variant="filled" {...register("city")} />
               </FormControl>
 
               <FormControl>
-                <FormLabel mb={-1}>State</FormLabel>
-                <Input size="sm" variant="flushed" {...register("state")} />
+                <FormLabel>State</FormLabel>
+                <Input size="md" variant="filled" {...register("state")} />
               </FormControl>
             </Grid>
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="gray" mr={3} onClick={onClose} size={"sm"}>
-              Close
-            </Button>
-            <Button
-              colorScheme={"blue"}
-              size={"sm"}
-              type="submit"
-              isLoading={mutation.isPending}
-            >
-              Add Patient
-            </Button>
+            <Flex w="100%" gap={3}>
+              <Button
+                colorScheme="gray"
+                onClick={onClose}
+                size="md"
+                borderRadius="md"
+                fontWeight="semibold"
+                flex={1}
+              >
+                Close
+              </Button>
+              <Button
+                colorScheme="blue"
+                size="md"
+                type="submit"
+                isLoading={mutation.isPending}
+                borderRadius="md"
+                fontWeight="semibold"
+                flex={2}
+              >
+                Add Patient
+              </Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </form>
