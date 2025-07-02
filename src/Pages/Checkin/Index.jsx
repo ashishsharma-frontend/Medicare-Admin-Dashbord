@@ -10,6 +10,7 @@ import {
   theme,
   useDisclosure,
   useToast,
+  Stack,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { FaTrash } from "react-icons/fa";
@@ -38,6 +39,7 @@ const getPageIndices = (currentPage, itemsPerPage) => {
   let endIndex = startIndex + itemsPerPage - 1;
   return { startIndex, endIndex };
 };
+
 export default function Checkin() {
   const { hasPermission } = useHasPermission();
   const [SelectedData, setSelectedData] = useState();
@@ -74,7 +76,6 @@ export default function Checkin() {
     queryKey: ["doct_id", admin.id],
     queryFn: async () => {
       const res = await GET(admin.token, `get_queue_data/${admin.id}`);
-      //console.log(res.data);
       return res.data;
     },
   });
@@ -86,7 +87,6 @@ export default function Checkin() {
         : `get_appointment_check_in_page?start=${startIndex}&end=${endIndex}&search=${debouncedSearchQuery}&start_date=${start_date}&end_date=${end_date}`;
     const res = await GET(admin.token, url);
 
-    //console.log(res);
     const rearrangedArray = res?.data.map((doctor) => {
       const {
         id,
@@ -114,7 +114,7 @@ export default function Checkin() {
         patient: `${patient_f_name} ${patient_l_name}`,
         Date: moment(date).format("DD MMM YYYY"),
         Time: moment(time, "HH:mm:ss").format("hh:mm A"),
-        type:type,
+        type: type,
         created_at,
         updated_at,
       };
@@ -129,48 +129,40 @@ export default function Checkin() {
 
     // Final new appointments array
     const newAppointments = [];
-    //console.log('GROUPED :', groupedAppointments);
-
-    //let newAppointments = [];
-
     // Determine the maximum number of iterations required based on appointment distribution
     let maxLength = 0;
-    for (const property in groupedAppointments) {
-      for (const item of atPriority) {
-        if (property === item.type && item.no > 0) {
-          const tempLength = Math.ceil(groupedAppointments[property].length / item.no);
-          if (tempLength > maxLength) {
-            maxLength = tempLength;
+    if (atPriority) {
+      for (const property in groupedAppointments) {
+        for (const item of atPriority) {
+          if (property === item.type && item.no > 0) {
+            const tempLength = Math.ceil(
+              groupedAppointments[property].length / item.no
+            );
+            if (tempLength > maxLength) {
+              maxLength = tempLength;
+            }
           }
         }
       }
-    }
-    //console.log('LENGTH', maxLength);
-    // Process appointments based on sortdep priority
-    for (let i = 0; i < maxLength; i++) {
-      for (const item of atPriority) {
-        const type = item.type;
-        const appointmentsList = groupedAppointments[type] || [];
-
-        // Add appointments if available
-        var j = item.no;
-        while (j > 0 && appointmentsList.length > 0) {
-          newAppointments.push(appointmentsList.shift());
-          j--;
+      // Process appointments based on sortdep priority
+      for (let i = 0; i < maxLength; i++) {
+        for (const item of atPriority) {
+          const type = item.type;
+          const appointmentsList = groupedAppointments[type] || [];
+          // Add appointments if available
+          var j = item.no;
+          while (j > 0 && appointmentsList.length > 0) {
+            newAppointments.push(appointmentsList.shift());
+            j--;
+          }
         }
-        //console.log(i);
-        //console.log(newAppointments);
       }
-
-
     }
     if (admin.role.name === "Doctor") {
       return { data: newAppointments, total_record: res.total_record };
     } else {
       return { data: rearrangedArray, total_record: res.total_record };
     }
-
-    // return { data: rearrangedArray, total_record: res.total_record };
   };
 
   const handleActionClick = (rowData) => {
@@ -204,66 +196,62 @@ export default function Checkin() {
   if (!hasPermission("CHECKIN_VIEW")) return <NotAuth />;
 
   return (
-    <Box ref={boxRef}>
+    <Box ref={boxRef} px={{ base: 2, md: 6 }}>
       {isLoading || !data ? (
         <Box>
           <Flex mb={5} justify={"space-between"}>
             <Skeleton w={400} h={8} />
             <Skeleton w={200} h={8} />
           </Flex>
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
-          <Skeleton h={10} w={"100%"} mt={2} />
+          {[...Array(10)].map((_, i) => (
+            <Skeleton h={10} w={"100%"} mt={2} key={i} />
+          ))}
         </Box>
       ) : (
         <Box>
-          <Flex mb={5} justify={"space-between"} align={"center"}>
+          {/* Responsive Controls: Stack one by one on mobile, row on desktop */}
+          <Flex
+            mb={5}
+            direction={{ base: "column", md: "row" }}
+            gap={{ base: 3, md: 4 }}
+            align={{ base: "stretch", md: "center" }}
+            justify={{ base: "flex-start", md: "space-between" }}
+          >
             <Input
-              size={"md"}
+              size="md"
               placeholder="Search"
-              w={400}
-              maxW={"50vw"}
+              w={{ base: "100%", md: 400 }}
+              maxW={{ base: "100%", md: "50vw" }}
               onChange={(e) => setsearchQuery(e.target.value)}
               value={searchQuery}
             />
             <DateRangeCalender
               dateRange={dateRange}
               setDateRange={setdateRange}
-              size={"md"}
+              size="md"
+              w={{ base: "100%", md: "auto" }}
             />
-            <Box>
-              <Flex align={"center"} gap={5}>
-                {" "}
-                <Button
-                  size={"sm"}
-                  colorScheme="blue"
-                  onClick={() => {
-                    const baseUrl = `${window.location.protocol}//${window.location.host}`;
-                    window.open(`${baseUrl}/admin/queue`, "_blank");
-                  }}
-                  rightIcon={<BiLinkExternal />}
-                >
-                  Show Checkin Display
-                </Button>
-                <Button
-                  isDisabled={!hasPermission("CHECKIN_ADD")}
-                  size={"sm"}
-                  colorScheme="blue"
-                  onClick={() => {
-                    onOpen();
-                  }}
-                >
-                  New Checkin
-                </Button>
-              </Flex>
-            </Box>
+            <Button
+              size={{ base: "md", md: "sm" }}
+              colorScheme="blue"
+              w={{ base: "100%", md: "auto" }}
+              onClick={() => {
+                const baseUrl = `${window.location.protocol}//${window.location.host}`;
+                window.open(`${baseUrl}/admin/queue`, "_blank");
+              }}
+              rightIcon={<BiLinkExternal />}
+            >
+              Show Checkin Display
+            </Button>
+            <Button
+              isDisabled={!hasPermission("CHECKIN_ADD")}
+              size={{ base: "md", md: "sm" }}
+              colorScheme="blue"
+              w={{ base: "100%", md: "auto" }}
+              onClick={onOpen}
+            >
+              New Checkin
+            </Button>
           </Flex>
           <DynamicTable
             data={data.data}
@@ -310,14 +298,13 @@ export default function Checkin() {
 const YourActionButton = ({ onClick, rowData, DeleteonOpen, EditonOpen }) => {
   const { hasPermission } = useHasPermission();
   return (
-    <Flex justify={"center"}>
+    <Flex justify="center" gap={2} flexWrap="wrap">
       <IconButton
         isDisabled={!hasPermission("CHECKIN_UPDATE")}
-        size={"sm"}
-        variant={"ghost"}
-        _hover={{
-          background: "none",
-        }}
+        size={{ base: "md", md: "sm" }}
+        variant="ghost"
+        aria-label="Edit"
+        _hover={{ background: "gray.100" }}
         onClick={() => {
           onClick(rowData);
           EditonOpen();
@@ -326,11 +313,10 @@ const YourActionButton = ({ onClick, rowData, DeleteonOpen, EditonOpen }) => {
       />
       <IconButton
         isDisabled={!hasPermission("CHECKIN_DELETE")}
-        size={"sm"}
-        variant={"ghost"}
-        _hover={{
-          background: "none",
-        }}
+        size={{ base: "md", md: "sm" }}
+        variant="ghost"
+        aria-label="Delete"
+        _hover={{ background: "gray.100" }}
         onClick={() => {
           onClick(rowData);
           DeleteonOpen();
