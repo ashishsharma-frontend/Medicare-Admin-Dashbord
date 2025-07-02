@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+/* Base styles for dark mode */
+
+/* Add this CSS to your global styles or a CSS module */
+.pagination {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  align-items: "center";
+}
+
+.page-item {
+  margin: 0 5px;
+}
+
+.page-link {
+  font-size: small;
+  padding: 8px 10px;
+  border: 1px solid var(--chakra-colors-gray-300);
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: var(--chakra-colors-white);
+}
+
+.page-link:hover {
+  background-color: var(--chakra-colors-gray-100);
+}
+
+.active .page-link {
+  background-color: var(--chakra-colors-blue-500);
+  color: var(--chakra-colors-white);
+  border-color: var(--chakra-colors-blue-500);
+}
+
+.disabled .page-link {
+  cursor: not-allowed;
+  background-color: var(--chakra-colors-gray-200);
+  border-color: var(--chakra-colors-gray-200);
+}
+
+/* Dark mode styles */
+[data-theme="dark"] .pagination {
+  color: var(--chakra-colors-gray-200);
+}
+
+[data-theme="dark"] .page-link {
+  border-color: var(--chakra-colors-gray-600);
+  background-color: var(--chakra-colors-gray-700);
+}
+
+[data-theme="dark"] .page-link:hover {
+  background-color: var(--chakra-colors-gray-600);
+}
+
+[data-theme="dark"] .active .page-link {
+  background-color: var(--chakra-colors-blue-300);
+  color: var(--chakra-colors-gray-900);
+  border-color: var(--chakra-colors-blue-300);
+}
+
+[data-theme="dark"] .disabled .page-link {
+  background-color: var(--chakra-colors-gray-600);
+  border-color: var(--chakra-colors-gray-600);
+}
+
+/*======================
+    404 page
+=======================*/
+
+.page_404 {
+  padding: 40px 0;
+  background: #fff;
+  font-family: "Arvo", serif;
+}
+
+.page_404 img {
+  width: 100%;
+}
+
+.four_zero_four_bg {
+  background-image: url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif);
+  height: 400px;
+  background-position: center;
+}
+
+.four_zero_four_bg h1 {
+  font-size: 80px;
+}
+
+.four_zero_four_bg h3 {
+  font-size: 80px;
+}
+
+.link_404 {
+  color: #fff !important;
+  padding: 10px 20px;
+  background: #39ac31;
+  margin: 20px 0;
+  display: inline-block;
+}
+.contant_box_404 {
+  margin-top: -50px;
+}
+
+/* date range picker */
+.rdrDateRangePickerWrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+[data-theme="dark"] .rdrDefinedRangesWrapper {
+  background-color: var(--chakra-colors-gray-800) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDefinedRangesWrapper button {
+  background-color: var(--chakra-colors-gray-800) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDefinedRangesWrapper button:hover .rdrStaticRangeLabel {
+  background-color: var(--chakra-colors-gray-600) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDefinedRangesWrapper .rdrStaticRangeSelected {
+  background-color: var(--chakra-colors-gray-600) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDefinedRangesWrapper button:hover .rdrStaticRangeLabel {
+  background-color: var(--chakra-colors-gray-600) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDateDisplayWrapper,
+[data-theme="dark"] .rdrMonthAndYearWrapper,
+[data-theme="dark"] .rdrMonths {
+  background-color: var(--chakra-colors-gray-800) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .rdrDateDisplayItem,
+[data-theme="dark"] .rdrDateDisplayItem + .rdrDateDisplayItem {
+  background-color: var(--chakra-colors-gray-600) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDateDisplayItem input,
+[data-theme="dark"] .rdrDateDisplayItem input:active {
+  background-color: var(--chakra-colors-gray-600) !important;
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrMonthAndYearPickers select {
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrMonth {
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrDay .rdrDayNumber span {
+  color: #fff !important;
+}
+[data-theme="dark"] .rdrYearPicker select {
+  color: #ecf0f1;
+}
+[data-theme="dark"] .rdrYearPicker select:hover {
+  background-color: #2c3e50; /* Background color for the dropdown */
+  color: #ecf0f1; /* Text color for the dropdown */
+}
+[data-theme="dark"] .rdrMonthPicker select {
+  /* Background color for the dropdown */
+  color: #ecf0f1; /* Text color for the dropdown */
+}
+[data-theme="dark"] .rdrMonthPicker select:hover {
+  background-color: #2c3e50; /* Background color for the dropdown */
+  color: #ecf0f1; /* Text color for the dropdown */
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: none !important;
+}
+
+[data-theme="dark"] .rbc-today {
+  background-color: var(--chakra-colors-gray-700);
+}
+.rbc-btn-group button {
+  color: #fff;
+  padding: 2px 15px;
+  font-size: 14px;
+}
+[data-theme="dark"] .rbc-btn-group button {
+  color: #fff;
+  padding: 2px 15px;
+  font-size: 14px;
+}
+.rbc-event-label {
+  display: none !important;
+}
+
+.rbc-day-slot .rbc-event-label,
+.rbc-event-content {
+  font-size: 12px;
+  line-height: initial;
+}
+.rbc-day-slot .rbc-event,
+.rbc-day-slot .rbc-background-event {
+  width: fit-content !important;
+}
+
+.rbc-agenda-view table.rbc-agenda-table {
+  font-size: 14px !important;
+  font-weight: 400;
+}
+
+.rbc-day-slot .rbc-event {
+  border: none !important;
+  background: transparent !important;
+  min-height: fit-content !important;
+  height: 7.65% !important;
+}
+.rbc-day-slot .rbc-event:focus {
+  outline: none;
+}
